@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@font-face {
+  font-family: 'ReenieBeanie';
+  src: url('/ReenieBeanie-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* Dark theme colors - #722f38 base, #efdfbb secondary */
+    --background: 351 38% 19%;
+    --foreground: 44 48% 83%;
+
+    --card: 351 38% 16%;
+    --card-foreground: 44 48% 83%;
+
+    --popover: 351 38% 16%;
+    --popover-foreground: 44 48% 83%;
+
+    --primary: 44 48% 83%;
+    --primary-foreground: 351 38% 19%;
+
+    --secondary: 351 25% 25%;
+    --secondary-foreground: 44 48% 83%;
+
+    --muted: 351 20% 30%;
+    --muted-foreground: 44 30% 65%;
+
+    --accent: 351 30% 35%;
+    --accent-foreground: 44 48% 83%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 44 48% 83%;
+
+    --border: 351 25% 30%;
+    --input: 351 25% 25%;
+    --ring: 44 48% 83%;
+
+    --radius: 0.75rem;
+
+    /* Writing-specific design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(44 48% 83%), hsl(44 48% 75%));
+    --gradient-subtle: linear-gradient(180deg, hsl(351 38% 19%), hsl(351 38% 16%));
+    --shadow-soft: 0 4px 20px -4px hsl(351 38% 10% / 0.3);
+    --shadow-focus: 0 0 0 3px hsl(44 48% 83% / 0.2);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Quirky/comic design tokens */
+    --shadow-quirky: 2px 2px 0px hsl(44 48% 83% / 0.3);
+    --border-quirky: 2px solid hsl(44 48% 83% / 0.6);
+    --border-radius-quirky: 12px;
+    
+    /* Typography scale */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --app-font-family: 'ReenieBeanie', cursive, sans-serif;
+    --app-font-size: 20px;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    font-family: var(--app-font-family) !important;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--app-font-size) !important;
+  }
+
+  /* Override Tailwind's default font sizes and ensure inheritance */
+  h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, label, a {
+    font-size: inherit !important;
+  }
+
+  /* For elements that need specific scaling based on the base font size */
+  .text-scale-xs { font-size: calc(var(--app-font-size) * 0.75) !important; }
+  .text-scale-sm { font-size: calc(var(--app-font-size) * 0.875) !important; }
+  .text-scale-base { font-size: var(--app-font-size) !important; }
+  .text-scale-lg { font-size: calc(var(--app-font-size) * 1.125) !important; }
+  .text-scale-xl { font-size: calc(var(--app-font-size) * 1.25) !important; }
+  .text-scale-2xl { font-size: calc(var(--app-font-size) * 1.5) !important; }
+  .text-scale-3xl { font-size: calc(var(--app-font-size) * 1.875) !important; }
+
+  /* Override specific Tailwind text size classes */
+  .text-xs { font-size: calc(var(--app-font-size) * 0.75) !important; }
+  .text-sm { font-size: calc(var(--app-font-size) * 0.875) !important; }
+  .text-base { font-size: var(--app-font-size) !important; }
+  .text-lg { font-size: calc(var(--app-font-size) * 1.125) !important; }
+  .text-xl { font-size: calc(var(--app-font-size) * 1.25) !important; }
+  .text-2xl { font-size: calc(var(--app-font-size) * 1.5) !important; }
+  .text-3xl { font-size: calc(var(--app-font-size) * 1.875) !important; }
+}
