@@ -20,7 +20,7 @@ export const Settings = ({ isOpen, onClose, customFont, onFontChange }: Settings
 
   useEffect(() => {
     // Initialize any custom font if needed
-    const savedFont = localStorage.getItem('writeaid_font');
+    const savedFont = localStorage.getItem('pushtak_font');
     if (savedFont && savedFont !== 'ReenieBeanie') {
       setCustomFontName(savedFont);
     }
@@ -46,7 +46,7 @@ export const Settings = ({ isOpen, onClose, customFont, onFontChange }: Settings
       setCustomFontName(fontName);
       onFontChange(fontName);
       document.documentElement.style.setProperty('--app-font-family', `'${fontName}', cursive, sans-serif`);
-      localStorage.setItem('writeaid_font', fontName);
+      localStorage.setItem('pushtak_font', fontName);
       toast({
         title: "Font Uploaded",
         description: `${file.name} has been successfully loaded.`,
@@ -70,7 +70,7 @@ export const Settings = ({ isOpen, onClose, customFont, onFontChange }: Settings
     setCustomFontName(null);
     onFontChange('ReenieBeanie');
     document.documentElement.style.setProperty('--app-font-family', `'ReenieBeanie', cursive, sans-serif`);
-    localStorage.setItem('writeaid_font', 'ReenieBeanie');
+    localStorage.setItem('pushtak_font', 'ReenieBeanie');
     const fileInput = document.getElementById('font-upload') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
     toast({

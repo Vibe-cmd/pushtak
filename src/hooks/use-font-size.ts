@@ -1,53 +1,59 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export const useFontSize = () => {
-  const [fontSize, setFontSize] = useState<number>(20);
+  const [fontSize, setFontSize] = useState(16);
 
   useEffect(() => {
-    // Load font size from localStorage on mount
-    const savedSize = localStorage.getItem('writeaid_font_size');
+    const savedSize = localStorage.getItem('pushtak_font_size');
     if (savedSize) {
-      const size = Number(savedSize);
+      const size = parseInt(savedSize, 10);
       setFontSize(size);
-      updateCSSVariable(size);
+      document.documentElement.style.setProperty('--app-font-size', `${size}px`);
     } else {
-      // Try to get from CSS variable, strip 'px' if present
-      const currentSize = getComputedStyle(document.documentElement)
-        .getPropertyValue('--app-font-size')
-        .replace('px', '')
-        .trim();
-      if (currentSize && !isNaN(Number(currentSize))) {
-        setFontSize(Number(currentSize));
-      }
+      // Set default font size
+      setFontSize(16);
+      document.documentElement.style.setProperty('--app-font-size', '16px');
     }
   }, []);
 
-  const updateCSSVariable = useCallback((size: number) => {
-    document.documentElement.style.setProperty('--app-font-size', `${size}px`);
-  }, []);
-
-  const updateFontSize = useCallback((newSize: number) => {
+  const increaseFontSize = () => {
+    const newSize = Math.min(fontSize + 2, 32);
     setFontSize(newSize);
-    updateCSSVariable(newSize);
-    localStorage.setItem('writeaid_font_size', String(newSize));
-  }, [updateCSSVariable]);
+    localStorage.setItem('pushtak_font_size', String(newSize));
+    document.documentElement.style.setProperty('--app-font-size', `${newSize}px`);
+  };
 
-  const getCurrentFontSize = useCallback(() => {
-    const savedSize = localStorage.getItem('writeaid_font_size');
+  const decreaseFontSize = () => {
+    const newSize = Math.max(fontSize - 2, 12);
+    setFontSize(newSize);
+    localStorage.setItem('pushtak_font_size', String(newSize));
+    document.documentElement.style.setProperty('--app-font-size', `${newSize}px`);
+  };
+
+  const resetFontSize = () => {
+    const savedSize = localStorage.getItem('pushtak_font_size');
     if (savedSize) {
-      return Number(savedSize);
+      const size = parseInt(savedSize, 10);
+      setFontSize(size);
+      document.documentElement.style.setProperty('--app-font-size', `${size}px`);
+    } else {
+      setFontSize(16);
+      document.documentElement.style.setProperty('--app-font-size', '16px');
     }
-    // Try to get from CSS variable, strip 'px' if present
-    const currentSize = getComputedStyle(document.documentElement)
-      .getPropertyValue('--app-font-size')
-      .replace('px', '')
-      .trim();
-    return currentSize && !isNaN(Number(currentSize)) ? Number(currentSize) : 20;
-  }, []);
+  };
+
+  const updateFontSize = (newSize: number) => {
+    const clampedSize = Math.max(12, Math.min(newSize, 72));
+    setFontSize(clampedSize);
+    localStorage.setItem('pushtak_font_size', String(clampedSize));
+    document.documentElement.style.setProperty('--app-font-size', `${clampedSize}px`);
+  };
 
   return {
     fontSize,
+    increaseFontSize,
+    decreaseFontSize,
+    resetFontSize,
     updateFontSize,
-    getCurrentFontSize,
   };
 };

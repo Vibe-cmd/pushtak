@@ -55,7 +55,7 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
         collapsedBlocks: Array.from(collapsedBlocks),
         timestamp: new Date().toISOString() 
       };
-      localStorage.setItem(`writeaid_${bookTitle}`, JSON.stringify(saveData));
+      localStorage.setItem(`pushtak_${bookTitle}`, JSON.stringify(saveData));
     }, 30000);
 
     return () => clearInterval(saveInterval);
@@ -63,7 +63,7 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
 
   // Load saved content
   useEffect(() => {
-    const saved = localStorage.getItem(`writeaid_${bookTitle}`);
+    const saved = localStorage.getItem(`pushtak_${bookTitle}`);
     if (saved) {
       const { blocks: savedBlocks, collapsedBlocks: savedCollapsed } = JSON.parse(saved);
       setBlocks(savedBlocks || [{ id: '1', type: 'text', content: '', isCollapsed: false }]);

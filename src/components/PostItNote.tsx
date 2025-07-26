@@ -29,7 +29,7 @@ export const PostItNote = ({ isVisible, onClose }: PostItNoteProps) => {
   const noteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedData = localStorage.getItem('writeaid_postit');
+    const savedData = localStorage.getItem('pushtak_postit');
     if (savedData) {
       const { notes: savedNotes, checklistItems: savedItems, position: savedPosition } = JSON.parse(savedData);
       setNotes(savedNotes || "");
@@ -46,7 +46,7 @@ export const PostItNote = ({ isVisible, onClose }: PostItNoteProps) => {
       checklistItems,
       position
     };
-    localStorage.setItem('writeaid_postit', JSON.stringify(saveData));
+    localStorage.setItem('pushtak_postit', JSON.stringify(saveData));
   }, [notes, checklistItems, position]);
 
   const addChecklistItem = () => {

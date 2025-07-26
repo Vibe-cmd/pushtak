@@ -25,7 +25,7 @@ const Index = () => {
   // Load books and settings on mount
   useEffect(() => {
     loadBooks();
-    const savedFont = localStorage.getItem('writeaid_font');
+    const savedFont = localStorage.getItem('pushtak_font');
     if (savedFont) {
       setCustomFont(savedFont);
       loadGoogleFont(savedFont);
@@ -35,15 +35,15 @@ const Index = () => {
   const loadBooks = () => {
     const savedBooks: Book[] = [];
     
-    // Scan localStorage for writeaid books
+    // Scan localStorage for pushtak books
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith('writeaid_') && 
-          key !== 'writeaid_font' && 
-          key !== 'writeaid_custom_font' && 
-          key !== 'writeaid_custom_font_name' &&
-          key !== 'writeaid_custom_font_size') {
-        const bookTitle = key.replace('writeaid_', '');
+      if (key?.startsWith('pushtak_') && 
+          key !== 'pushtak_font' && 
+          key !== 'pushtak_custom_font' && 
+          key !== 'pushtak_custom_font_name' &&
+          key !== 'pushtak_custom_font_size') {
+        const bookTitle = key.replace('pushtak_', '');
         const data = localStorage.getItem(key);
         if (data) {
           try {
@@ -114,7 +114,7 @@ const Index = () => {
 
   const deleteBook = (title: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    localStorage.removeItem(`writeaid_${title}`);
+    localStorage.removeItem(`pushtak_${title}`);
     setBooks(prev => prev.filter(book => book.title !== title));
     
     toast({
@@ -152,13 +152,14 @@ const Index = () => {
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            {/* Use the custom title class */}
+          <div className="flex items-center justify-center relative">
+            {/* Centered title */}
             <h1 className="app-title text-primary">
-              WriteAid
+              Pushtak
             </h1>
             
-            <div className="flex items-center gap-3">
+            {/* Settings buttons positioned absolutely on the right */}
+            <div className="absolute right-0 flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"

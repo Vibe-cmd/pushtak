@@ -13,7 +13,7 @@
 
 /* Custom Title Font - Using RibeyeMarrow for distinctive title */
 @font-face {
-  font-family: 'WriteAid Title';
+  font-family: 'Pushtak Title';
   src: url('/RibeyeMarrow-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
@@ -27,7 +27,7 @@ html, body, * {
 
 /* Title-specific styling */
 .app-title {
-  font-family: 'WriteAid Title', serif !important;
+  font-family: 'Pushtak Title', serif !important;
   font-size: 4rem !important; /* 64px - large and locked */
   font-weight: bold !important;
   line-height: 1.1 !important;
@@ -50,6 +50,34 @@ html, body, * {
 /* Writing content wrapper for custom font sizing */
 .writing-content {
   /* Content that can have custom font sizing */
+  font-size: var(--app-font-size, 16px);
+}
+
+/* Apply to all textareas within writing content regardless of other classes */
+.writing-content textarea {
+  font-size: var(--app-font-size, 16px) !important;
+}
+
+/* Override specific Tailwind text size classes for textareas */
+.writing-content textarea.text-2xl {
+  font-size: calc(var(--app-font-size, 16px) * 1.5) !important;
+}
+
+.writing-content textarea.text-xl {
+  font-size: calc(var(--app-font-size, 16px) * 1.25) !important;
+}
+
+.writing-content textarea.text-base {
+  font-size: var(--app-font-size, 16px) !important;
+}
+
+/* Make sure other text elements scale proportionally */
+.writing-content .text-sm {
+  font-size: calc(var(--app-font-size, 16px) * 0.875) !important;
+}
+
+.writing-content .text-xs {
+  font-size: calc(var(--app-font-size, 16px) * 0.75) !important;
 }
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
