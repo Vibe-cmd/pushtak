@@ -189,7 +189,7 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Writing Area */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4" style={{ fontSize: 'var(--app-font-size)' }}>
             {/* Block Type Controls */}
             <Card className="border-quirky shadow-quirky bg-card/80">
               <CardContent className="p-4">
@@ -299,9 +299,9 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
                                 'Start writing...'
                               }
                               className={`border-none resize-none focus:ring-0 p-0 bg-transparent ${
-                                block.type === 'chapter' ? 'text-2xl font-bold' :
-                                block.type === 'section' ? 'text-xl font-semibold' :
-                                'text-base'
+                                block.type === 'chapter' ? 'font-bold' :
+                                block.type === 'section' ? 'font-semibold' :
+                                ''
                               }`}
                               rows={block.type === 'text' ? 8 : 2}
                               onFocus={() => setSelectedBlockId(block.id)}
@@ -323,7 +323,7 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => addBlock('section', block.id)}
-                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                   title="Add section after"
                                 >
                                   S
@@ -332,7 +332,7 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => addBlock('chapter', block.id)}
-                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                   title="Add chapter after"
                                 >
                                   C
