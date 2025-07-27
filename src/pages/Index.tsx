@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, BookOpen, Plus, Trash2, Settings as SettingsIcon, StickyNote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFontSize } from "@/hooks/use-font-size";
 import { WritingEditor } from "@/components/WritingEditor";
 import { Settings as SettingsModal } from "@/components/Settings";
 import { PostItNote } from "@/components/PostItNote";
@@ -21,9 +22,32 @@ const Index = () => {
   const [customFont, setCustomFont] = useState("");
   const [showPostIt, setShowPostIt] = useState(false);
   const { toast } = useToast();
+  const { fontSize } = useFontSize();
 
   // Load books and settings on mount
   useEffect(() => {
+    // One-time cleanup of any leftover development data
+    const hasRunCleanup = localStorage.getItem('pushtak_cleanup_complete');
+    if (!hasRunCleanup) {
+      // Clear any existing book data that might be from development
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('pushtak_') && 
+            key !== 'pushtak_font' && 
+            key !== 'pushtak_custom_font' && 
+            key !== 'pushtak_custom_font_name' &&
+            key !== 'pushtak_custom_font_size' &&
+            key !== 'pushtak_font_size' &&
+            key !== 'pushtak_postit' &&
+            key !== 'pushtak_cleanup_complete') {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      localStorage.setItem('pushtak_cleanup_complete', 'true');
+    }
+
     loadBooks();
     const savedFont = localStorage.getItem('pushtak_font');
     if (savedFont) {
@@ -35,33 +59,43 @@ const Index = () => {
   const loadBooks = () => {
     const savedBooks: Book[] = [];
     
-    // Scan localStorage for pushtak books
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('pushtak_') && 
-          key !== 'pushtak_font' && 
-          key !== 'pushtak_custom_font' && 
-          key !== 'pushtak_custom_font_name' &&
-          key !== 'pushtak_custom_font_size') {
-        const bookTitle = key.replace('pushtak_', '');
-        const data = localStorage.getItem(key);
-        if (data) {
-          try {
-            const parsed = JSON.parse(data);
-            savedBooks.push({
-              title: bookTitle,
-              lastModified: parsed.timestamp || new Date().toISOString()
-            });
-          } catch (e) {
-            // Skip invalid entries
+    try {
+      // Scan localStorage for pushtak books
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('pushtak_') && 
+            key !== 'pushtak_font' && 
+            key !== 'pushtak_custom_font' && 
+            key !== 'pushtak_custom_font_name' &&
+            key !== 'pushtak_custom_font_size' &&
+            key !== 'pushtak_font_size' &&
+            key !== 'pushtak_postit' &&
+            key !== 'pushtak_cleanup_complete') {
+          const bookTitle = key.replace('pushtak_', '');
+          const data = localStorage.getItem(key);
+          if (data) {
+            try {
+              const parsed = JSON.parse(data);
+              savedBooks.push({
+                title: bookTitle,
+                lastModified: parsed.timestamp || new Date().toISOString()
+              });
+            } catch (e) {
+              console.warn(`Skipping invalid book data for ${bookTitle}:`, e);
+              // Remove corrupted data
+              localStorage.removeItem(key);
+            }
           }
         }
       }
+      
+      // Sort by last modified
+      savedBooks.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
+      setBooks(savedBooks);
+    } catch (error) {
+      console.warn('Error loading books:', error);
+      setBooks([]);
     }
-    
-    // Sort by last modified
-    savedBooks.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
-    setBooks(savedBooks);
   };
 
   const loadGoogleFont = (fontName: string) => {
@@ -98,14 +132,33 @@ const Index = () => {
       lastModified: new Date().toISOString()
     };
 
-    setBooks(prev => [newBook, ...prev]);
-    setCurrentBook(title);
-    setNewBookTitle("");
+    // Immediately save the book to localStorage with initial empty content
+    const initialBookData = {
+      bookTitle: title,
+      blocks: [{ id: '1', type: 'text', content: '', isCollapsed: false }],
+      collapsedBlocks: [],
+      timestamp: new Date().toISOString()
+    };
     
-    toast({
-      title: "Book created",
-      description: `Started writing "${title}"`
-    });
+    try {
+      localStorage.setItem(`pushtak_${title}`, JSON.stringify(initialBookData));
+      
+      setBooks(prev => [newBook, ...prev]);
+      setCurrentBook(title);
+      setNewBookTitle("");
+      
+      toast({
+        title: "Book created",
+        description: `Started writing "${title}"`
+      });
+    } catch (error) {
+      console.error('Error creating book:', error);
+      toast({
+        title: "Error creating book",
+        description: "Unable to save the book. Please check your browser storage.",
+        variant: "destructive"
+      });
+    }
   };
 
   const openBook = (title: string) => {
@@ -148,15 +201,25 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle" style={fontStyle}>
+    <div className="min-h-screen bg-gradient-subtle" style={{ 
+      ...fontStyle, 
+      fontSize: `${fontSize}px`
+    }}>
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-6">
           <div className="flex items-center justify-center relative">
-            {/* Centered title */}
-            <h1 className="app-title text-primary">
-              Pushtak
-            </h1>
+            {/* Centered title with logo */}
+            <div className="flex items-center gap-3">
+              <img 
+                src="/favicon.ico" 
+                alt="Pushtak Logo" 
+                className="h-12 w-12" 
+              />
+              <h1 className="app-title text-primary">
+                Pushtak
+              </h1>
+            </div>
             
             {/* Settings buttons positioned absolutely on the right */}
             <div className="absolute right-0 flex items-center gap-3">

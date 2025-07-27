@@ -46,7 +46,33 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-save functionality
+  // Auto-save functionality - save every 5 seconds and on content change
+  useEffect(() => {
+    const saveData = { 
+      bookTitle, 
+      blocks, 
+      collapsedBlocks: Array.from(collapsedBlocks),
+      timestamp: new Date().toISOString() 
+    };
+    
+    // Immediate save on content change
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(`pushtak_${bookTitle}`, JSON.stringify(saveData));
+      } catch (error) {
+        console.warn('Error saving book data:', error);
+        toast({
+          title: "Save Error",
+          description: "Unable to save your work. Please check your browser storage.",
+          variant: "destructive"
+        });
+      }
+    }, 1000); // Save after 1 second of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [bookTitle, blocks, collapsedBlocks, toast]);
+
+  // Additional periodic save as backup
   useEffect(() => {
     const saveInterval = setInterval(() => {
       const saveData = { 
@@ -55,19 +81,41 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
         collapsedBlocks: Array.from(collapsedBlocks),
         timestamp: new Date().toISOString() 
       };
-      localStorage.setItem(`pushtak_${bookTitle}`, JSON.stringify(saveData));
-    }, 30000);
+      try {
+        localStorage.setItem(`pushtak_${bookTitle}`, JSON.stringify(saveData));
+      } catch (error) {
+        console.warn('Error during periodic save:', error);
+      }
+    }, 10000); // Save every 10 seconds as backup
 
     return () => clearInterval(saveInterval);
   }, [bookTitle, blocks, collapsedBlocks]);
 
   // Load saved content
   useEffect(() => {
-    const saved = localStorage.getItem(`pushtak_${bookTitle}`);
-    if (saved) {
-      const { blocks: savedBlocks, collapsedBlocks: savedCollapsed } = JSON.parse(saved);
-      setBlocks(savedBlocks || [{ id: '1', type: 'text', content: '', isCollapsed: false }]);
-      setCollapsedBlocks(new Set(savedCollapsed || []));
+    try {
+      const saved = localStorage.getItem(`pushtak_${bookTitle}`);
+      if (saved) {
+        const parsedData = JSON.parse(saved);
+        const { blocks: savedBlocks, collapsedBlocks: savedCollapsed } = parsedData;
+        
+        // Ensure we have valid blocks
+        if (savedBlocks && Array.isArray(savedBlocks) && savedBlocks.length > 0) {
+          setBlocks(savedBlocks);
+        } else {
+          setBlocks([{ id: '1', type: 'text', content: '', isCollapsed: false }]);
+        }
+        
+        // Set collapsed blocks
+        if (savedCollapsed && Array.isArray(savedCollapsed)) {
+          setCollapsedBlocks(new Set(savedCollapsed));
+        }
+      }
+    } catch (error) {
+      console.warn('Error loading book data:', error);
+      // Initialize with default content if loading fails
+      setBlocks([{ id: '1', type: 'text', content: '', isCollapsed: false }]);
+      setCollapsedBlocks(new Set());
     }
   }, [bookTitle]);
 
