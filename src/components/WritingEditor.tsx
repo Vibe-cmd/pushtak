@@ -4,10 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Bot, Download, Save, Type, ChevronDown, ChevronRight, StickyNote, FileText, BookOpen, Hash } from "lucide-react";
+import { Settings, Bot, Download, Save, Type, ChevronDown, ChevronRight, StickyNote, FileText, BookOpen, Hash, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PostItNote } from "@/components/PostItNote";
 import { DocumentOutline } from "@/components/DocumentOutline";
+import { loadPrompts, getAllPromptCategories, getPromptsByCategory, getPromptText } from "@/lib/prompts";
 
 interface WritingEditorProps {
   bookTitle: string;
@@ -38,6 +39,8 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
   ]);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [selectedPromptCategory, setSelectedPromptCategory] = useState<string>("");
+  const [selectedPromptKey, setSelectedPromptKey] = useState<string>("");
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [showPostIt, setShowPostIt] = useState(false);
   const [showOutline, setShowOutline] = useState(true);
@@ -253,22 +256,39 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
 
   const handleAiPrompt = () => {
     const selectedText = getSelectedText();
-    if (!selectedText && !aiPrompt) {
+    
+    // Get the selected predefined prompt if available
+    let basePrompt = "";
+    if (selectedPromptCategory && selectedPromptKey) {
+      basePrompt = getPromptText(selectedPromptCategory, selectedPromptKey);
+      // Replace the placeholder with actual content
+      if (selectedText) {
+        basePrompt = basePrompt.replace("[User's content here]", selectedText);
+      } else {
+        basePrompt = basePrompt.replace("[User's content here]", aiPrompt || "Please help with my writing.");
+      }
+    } else if (selectedText || aiPrompt) {
+      // Fallback to original functionality if no predefined prompt selected
+      basePrompt = selectedText 
+        ? `Selected text: "${selectedText}"\n\nRequest: ${aiPrompt || "Please improve this text"}`
+        : aiPrompt;
+      basePrompt = `You are an AI co-writer for novels. ${basePrompt}`;
+    } else {
       toast({
-        title: "No text selected",
-        description: "Please select some text or enter a custom prompt.",
+        title: "No content selected",
+        description: "Please select a prompt category and specific prompt, or enter custom text.",
         variant: "destructive"
       });
       return;
     }
 
-    const promptText = selectedText 
-      ? `Selected text: "${selectedText}"\n\nRequest: ${aiPrompt || "Please improve this text"}`
-      : aiPrompt;
-
-    const encodedPrompt = encodeURIComponent(`You are an AI co-writer for novels. ${promptText}`);
+    const encodedPrompt = encodeURIComponent(basePrompt);
     window.open(`https://chat.openai.com/?prompt=${encodedPrompt}`, '_blank');
+    
+    // Reset form
     setAiPrompt("");
+    setSelectedPromptCategory("");
+    setSelectedPromptKey("");
     setShowAiPanel(false);
   };
 
@@ -383,21 +403,119 @@ export const WritingEditor = ({ bookTitle, onBack, customFont }: WritingEditorPr
             {showAiPanel && (
               <Card className="mb-6 border-quirky shadow-quirky bg-accent/50">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Bot className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold text-primary">AI Writing Assistant</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold text-primary">AI Writing Assistant</h3>
+                      {(selectedPromptCategory || selectedPromptKey) && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          Prompt Selected
+                        </span>
+                      )}
+                    </div>
+                    {(selectedPromptCategory || selectedPromptKey || aiPrompt) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedPromptCategory("");
+                          setSelectedPromptKey("");
+                          setAiPrompt("");
+                        }}
+                        className="flex items-center gap-1"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Clear
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex gap-2">
+                  
+                  {/* Prompt Selection */}
+                  <div className="space-y-3 mb-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Category</label>
+                        <Select 
+                          value={selectedPromptCategory} 
+                          onValueChange={(value) => {
+                            setSelectedPromptCategory(value);
+                            setSelectedPromptKey(""); // Reset specific prompt when category changes
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select category..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getAllPromptCategories().map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Specific Prompt</label>
+                        <Select 
+                          value={selectedPromptKey} 
+                          onValueChange={setSelectedPromptKey}
+                          disabled={!selectedPromptCategory}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select prompt..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedPromptCategory && 
+                              Object.keys(getPromptsByCategory(selectedPromptCategory)).map((promptKey) => (
+                                <SelectItem key={promptKey} value={promptKey}>
+                                  {promptKey}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    {/* Show selected prompt preview */}
+                    {selectedPromptCategory && selectedPromptKey && (
+                      <div className="bg-muted/50 p-3 rounded-md">
+                        <p className="text-sm text-muted-foreground mb-1">Selected prompt:</p>
+                        <div className="text-sm bg-background/50 p-2 rounded border">
+                          <p className="font-medium text-primary text-xs mb-1">
+                            {selectedPromptCategory} → {selectedPromptKey}
+                          </p>
+                          <p className="line-clamp-3">
+                            {getPromptText(selectedPromptCategory, selectedPromptKey)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Separator className="my-4" />
+                  
+                  {/* Custom input area */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">
+                      Additional Instructions (Optional)
+                    </label>
                     <Textarea
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
-                      placeholder="Describe what you need help with... (or select text first)"
+                      placeholder="Add specific instructions or leave blank to use selected prompt..."
                       className="flex-1"
                       rows={2}
                     />
-                    <Button onClick={handleAiPrompt} className="self-end">
-                      Generate
-                    </Button>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">
+                        💡 Tip: Select text in your writing first, then choose a prompt for targeted assistance
+                      </p>
+                      <Button onClick={handleAiPrompt} className="ml-auto">
+                        Generate
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
